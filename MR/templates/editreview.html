@@ -1,0 +1,199 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Review - MovieRater</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #000000;
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background-color: rgba(0, 0, 0, 0.95) !important;
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .edit-section {
+            padding: 2rem 0;
+            background: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.9));
+        }
+
+        .edit-card {
+            background: linear-gradient(145deg, rgba(25, 25, 25, 0.9), rgba(40, 40, 40, 0.9));
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-control {
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .form-control:focus {
+            background-color: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.3);
+            color: white;
+            box-shadow: 0 0 0 0.25rem rgba(255, 255, 255, 0.1);
+        }
+
+        .rating-stars {
+            color: #ffd700;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .genre-badge {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-right: 0.5rem;
+        }
+
+        .btn-save {
+            background-color: #28a745;
+            border: none;
+            color: #fff;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-save:hover {
+            background-color: #218838;
+        }
+
+        .btn-cancel {
+            background-color: #dc3545;
+            border: none;
+            color: #fff;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-cancel:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'HomeView' pk=user.id %}">
+                <i class="fas fa-film me-2"></i>MovieRater
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'HomeView' pk=user.id %}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'myratings' pk=user.id %}">My Ratings</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Edit Review Section -->
+    <section class="edit-section">
+        <div class="container">
+            <h2 class="mb-4">Edit Review for {{ review.movie.title }}</h2>
+            
+            <div class="edit-card">
+                <div class="mb-2">
+                    <span class="genre-badge">{{ review.movie.genre }}</span>
+                    <span class="genre-badge">{{ review.movie.language }}</span>
+                </div>
+
+                <form method="POST" action="{% url 'editreview' pk=user.id movie_pk=review.movie.id %}">
+                    {% csrf_token %}
+                    <div class="mb-4">
+                        <label class="form-label">Rating</label>
+                        <div class="rating-input">
+                            {% for i in "54321"|make_list %}
+                                <input type="radio" name="rating" value="{{ forloop.counter }}" 
+                                    id="rating-{{ forloop.counter }}"
+                                    {% if review.rating == forloop.counter %}checked{% endif %}
+                                    class="d-none">
+                                <label for="rating-{{ forloop.counter }}" class="rating-stars me-1">
+                                    <i class="far fa-star"></i>
+                                </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="review-text" class="form-label">Review</label>
+                        <textarea class="form-control" id="review-text" name="review" rows="5">{{ review.review }}</textarea>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-save">Save Changes</button>
+                        <a href="{% url 'myratings' pk=user.id %}" class="btn btn-cancel">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Star rating functionality
+        const stars = document.querySelectorAll('.rating-stars');
+        const ratingInputs = document.querySelectorAll('input[name="rating"]');
+
+        stars.forEach(star => {
+            star.addEventListener('click', function() {
+                const rating = this.previousElementSibling.value;
+                updateStars(rating);
+            });
+
+            star.addEventListener('mouseover', function() {
+                const rating = this.previousElementSibling.value;
+                updateStars(rating, true);
+            });
+
+            star.addEventListener('mouseout', function() {
+                const checkedInput = document.querySelector('input[name="rating"]:checked');
+                const currentRating = checkedInput ? checkedInput.value : 0;
+                updateStars(currentRating);
+            });
+        });
+
+        function updateStars(rating, hover = false) {
+            stars.forEach(star => {
+                const starRating = star.previousElementSibling.value;
+                const starIcon = star.querySelector('i');
+                if (starRating <= rating) {
+                    starIcon.className = 'fas fa-star';
+                } else {
+                    starIcon.className = 'far fa-star';
+                }
+            });
+        }
+
+        // Initialize stars based on current rating
+        const initialRating = document.querySelector('input[name="rating"]:checked')?.value || 0;
+        updateStars(initialRating);
+    </script>
+</body>
+</html>

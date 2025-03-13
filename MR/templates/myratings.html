@@ -1,0 +1,183 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Ratings - MovieRater</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #000000;
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background-color: rgba(0, 0, 0, 0.95) !important;
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .ratings-section {
+            padding: 2rem 0;
+            background: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.9));
+        }
+
+        .rating-card {
+            background: linear-gradient(145deg, rgba(25, 25, 25, 0.9), rgba(40, 40, 40, 0.9));
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            transition: transform 0.3s ease;
+        }
+
+        .rating-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .rating-stars {
+            color: #ffd700;
+            font-size: 1.2rem;
+        }
+
+        .rating-meta {
+            color: #888;
+            font-size: 0.9rem;
+        }
+
+        .rating-text {
+            color: #ddd;
+            margin: 1rem 0;
+            line-height: 1.6;
+        }
+
+        .genre-badge {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-right: 0.5rem;
+        }
+
+        .btn-edit {
+            background-color: #333;
+            border: none;
+            color: #fff;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-edit:hover {
+            background-color: #444;
+        }
+
+        .no-ratings {
+            text-align: center;
+            padding: 3rem;
+            color: #888;
+        }
+        .nav-link {
+            transition: all 0.3s ease;
+            padding: 0.375rem 1rem;
+            border-radius: 25px;
+        }
+
+        .nav-link:hover {
+            background-color: #444444;
+        }
+
+        .nav-link.active {
+            background-color: #333333;
+            border: 2px solid #333333;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-film me-2"></i>MovieRater
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'HomeUserView' pk=request.user.id %}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{% url 'MyRatings' pk=user.id %}">My Ratings</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Ratings Section -->
+    <section class="ratings-section">
+        <div class="container">
+            <h2 class="mb-4">My Movie Ratings</h2>
+            
+            {% if reviews %}
+                {% for review in reviews %}
+                <div class="rating-card" id="rating-{{ review.id }}">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h5 class="mb-1">{{ review.movie.title }}</h5>
+                            <div class="mb-2">
+                                <span class="genre-badge">{{ review.movie.genre }}</span>
+                                <span class="genre-badge">{{ review.movie.language }}</span>
+                            </div>
+                            <div class="rating-stars">
+                                {% for i in "12345"|make_list %}
+                                    {% if forloop.counter <= review.rating %}
+                                        <i class="fas fa-star"></i>
+                                    {% else %}
+                                        <i class="far fa-star"></i>
+                                    {% endif %}
+                                {% endfor %}
+                                <span class="ms-2">{{ review.rating|floatformat:1 }}</span>
+                            </div>
+                        </div>
+                        <div class="rating-meta">
+                            {{ review.created_at|date:"F d, Y" }}
+                        </div>
+                    </div>
+                    <div class="rating-text">
+                        {% if review.review %}
+                            {{ review.review }}
+                        {% else %}
+                            <em>No written review provided.</em>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-flex justify-content-end">
+                        <a href="{% url 'Editreview' pk=user.id movie_pk=review.movie.id %}" class="btn btn-edit">
+                            <i class="fas fa-edit me-2"></i>Edit
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="no-ratings">
+                    <i class="fas fa-star fa-3x mb-3"></i>
+                    <h3>No Ratings Yet</h3>
+                    <p>Start rating movies to see them here!</p>
+                </div>
+            {% endif %}
+        </div>
+    </section>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

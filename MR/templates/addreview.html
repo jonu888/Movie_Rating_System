@@ -1,0 +1,234 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Review - MovieRater</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #000000;
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .navbar {
+            background-color: rgba(0, 0, 0, 0.95) !important;
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .review-section {
+            flex: 1;
+            background: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.9)),
+                        url('{% static "images/cinema.jpg" %}') no-repeat center center;
+            background-size: cover;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 0;
+        }
+
+        .review-card {
+            background: linear-gradient(145deg, rgba(25, 25, 25, 0.9), rgba(40, 40, 40, 0.9));
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 2rem;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .form-control, .form-select {
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            background-color: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.3);
+            color: white;
+            box-shadow: 0 0 0 0.25rem rgba(255, 255, 255, 0.1);
+        }
+
+        .form-control::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .rating-input {
+            display: none;
+        }
+
+        .rating-stars {
+            font-size: 2rem;
+            color: #888888;
+            cursor: pointer;
+        }
+
+        .rating-stars:hover,
+        .rating-stars.selected {
+            color: #ffd700;
+        }
+
+        .submit-btn {
+            background-color: #333333;
+            border: 2px solid #333333;
+            color: white;
+            border-radius: 25px;
+            padding: 8px 25px;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .submit-btn:hover {
+            background-color: #444444;
+            border-color: #444444;
+        }
+
+        .form-label {
+            color: #cccccc;
+        }
+
+        .help-text {
+            color: #888888;
+            font-size: 0.85rem;
+            margin-top: 0.25rem;
+        }
+
+        textarea.form-control {
+            min-height: 150px;
+            resize: vertical;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-film me-2"></i>MovieRater
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'HomeUserView' pk=user.id %}">Home</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Review Section -->
+    <section class="review-section">
+        <div class="review-card">
+            <h2 class="text-center mb-4">Rate & Review Movie</h2>
+            <form method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="movie" value="{{ movie.id }}">
+                
+                <div class="mb-4">
+                    <label class="form-label">Rating</label>
+                    <div class="d-flex justify-content-center gap-2 mb-2">
+                        {% for i in "12345" %}
+                        <div class="rating-stars" data-rating="{{ forloop.counter }}">
+                            <i class="far fa-star"></i>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <input type="hidden" name="rating" id="selected_rating" required>
+                    {% if form.rating.errors %}
+                    <div class="error-message">
+                        {{ form.rating.errors|join:", " }}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-4">
+                    <label for="id_review" class="form-label">Your Review</label>
+                    <textarea class="form-control" id="id_review" name="review" rows="5" placeholder="Share your thoughts about the movie..."></textarea>
+                    {% if form.review.errors %}
+                    <div class="error-message">
+                        {{ form.review.errors|join:", " }}
+                    </div>
+                    {% endif %}
+                </div>
+
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} mb-3">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                <button type="submit" class="submit-btn btn">Submit Review</button>
+                <br>
+                
+
+                    <div class="d-flex justify-content-center gap-2 my-3">
+                        <a href="{% url 'discover_movies' pk=user.id %}" class="btn btn-outline-secondary">Back</a>
+                    </div>
+
+                
+            </form>
+        </div>
+    </section>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const stars = document.querySelectorAll('.rating-stars');
+            const ratingInput = document.getElementById('selected_rating');
+
+            stars.forEach(star => {
+                star.addEventListener('click', function() {
+                    const rating = this.dataset.rating;
+                    ratingInput.value = rating;
+                    
+                    // Update stars visual
+                    stars.forEach(s => {
+                        const starIcon = s.querySelector('i');
+                        if (s.dataset.rating <= rating) {
+                            starIcon.className = 'fas fa-star';
+                            s.classList.add('selected');
+                        } else {
+                            starIcon.className = 'far fa-star';
+                            s.classList.remove('selected');
+                        }
+                    });
+                });
+
+                star.addEventListener('mouseover', function() {
+                    const rating = this.dataset.rating;
+                    stars.forEach(s => {
+                        const starIcon = s.querySelector('i');
+                        if (s.dataset.rating <= rating) {
+                            starIcon.className = 'fas fa-star';
+                        }
+                    });
+                });
+
+                star.addEventListener('mouseout', function() {
+                    const currentRating = ratingInput.value;
+                    stars.forEach(s => {
+                        const starIcon = s.querySelector('i');
+                        if (!currentRating || s.dataset.rating > currentRating) {
+                            starIcon.className = 'far fa-star';
+                        }
+                    });
+                });
+            });
+        });
+    </script>
+</body>
+</html>
